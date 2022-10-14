@@ -12,12 +12,13 @@ public class Agent implements Steppable{
 	int xdir;
 	int ydir;
 	
-	public Agent(int x, int y, int xdir, int ydir) {
+	public Agent(int x, int y, int xdir, int ydir, boolean frozen) {
 		super();
 		this.x = x;
 		this.y = y;
 		this.xdir = xdir;
 		this.ydir = ydir;
+		this.frozen = frozen;
 	}
 	
 	public void testFrozen(Environment state, Bag neighbors){
@@ -27,12 +28,9 @@ public class Agent implements Steppable{
 		for(int i = 0; i < neighbors.numObjs; i++) {
 			Agent a = (Agent)neighbors.objs[i];
 			
-			state.sparseSpace.getObjectsAtLocation(a.x + 1, a.y + 1);
-			state.sparseSpace.getObjectsAtLocation(a.x, a.y + 1);
-			state.sparseSpace.getObjectsAtLocation(a.x - 1, a.y - 1);
-			state.sparseSpace.getObjectsAtLocation(a.x, a.y - 1);
-			state.sparseSpace.getObjectsAtLocation(a.x + 1, a.y);
-			state.sparseSpace.getObjectsAtLocation(a.x - 1, a.y);
+			if(a.frozen) {
+				frozen = true;
+			}
 		}
 		
 	}
@@ -44,12 +42,53 @@ public class Agent implements Steppable{
 	}
 	
 	public void move (Environment state) {
-		xdir = state.random.nextInt(3) - 1;
-		ydir = state.random.nextInt(3) - 1;
-	
+		if(state.random.nextBoolean(state.p)) {
+			xdir = state.random.nextInt(3) - 1;
+			ydir = state.random.nextInt(3) - 1;
+		}
 		placeAgent(state);
 	}
 	
+	public boolean isFrozen() {
+		return frozen;
+	}
+
+	public void setFrozen(boolean frozen) {
+		this.frozen = frozen;
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public int getXdir() {
+		return xdir;
+	}
+
+	public void setXdir(int xdir) {
+		this.xdir = xdir;
+	}
+
+	public int getYdir() {
+		return ydir;
+	}
+
+	public void setYdir(int ydir) {
+		this.ydir = ydir;
+	}
+
 	public int bx(int x, Environment state) {
 		if (x < 0){
 			// generate new x
@@ -60,7 +99,8 @@ public class Agent implements Steppable{
 			xdir = -1;
 			return x - 1;
 		}
-		return x;
+
+		return x + xdir;
 	}
 	public int by(int y, Environment state) {
 		if(y < 0) {
@@ -72,7 +112,8 @@ public class Agent implements Steppable{
 			ydir = -1;
 			return y - 1;
 		}
-		return y;
+
+		return y + ydir;
 	}
 	
 	public void placeAgent(Environment state) {
@@ -86,7 +127,7 @@ public class Agent implements Steppable{
 	    	tempx = state.sparseSpace.stx(x + xdir); //correct for a toroidal space on x-axis;
 	        tempy = state.sparseSpace.sty(y + ydir); //correct for a toroidal space on y-axis;
 	    }
-	    Bag b = state.sparseSpace.getObjectsAtLocation(x, y);//Get the bag of objects at location <tempx, tempy>
+	    Bag b = state.sparseSpace.getObjectsAtLocation(tempx, tempy);//Get the bag of objects at location <tempx, tempy>
 	    if(b == null) {
 	        x = tempx;
 	        y = tempy;
